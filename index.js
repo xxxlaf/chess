@@ -95,7 +95,15 @@ function updateTable() {
     document.body.appendChild(table);
 }
 
+function updatePiecePosition(location, destination) {
+    // find piece index based on location
+    var pieceIndex = pieceExists(location);
 
+    if (pieceIndex > -1) {
+        // update piece location to destination
+        pieces[pieceIndex][2] = destination;
+    }
+}
 
 function getPieceImageSource(color, piece) {
     // piece sources
@@ -145,8 +153,6 @@ function getPieceImageSource(color, piece) {
     }
 }
 
-
-
 function pieceExists(cellID) {    
     for (var i = 0; i < pieces.length; i++) {
         if (pieces[i][2] === cellID) {
@@ -156,8 +162,6 @@ function pieceExists(cellID) {
 
     return -1;
 }
-
-
 
 function determineCellID(i, j) {
     switch (j) {
@@ -179,5 +183,40 @@ function determineCellID(i, j) {
             return "H" + (8 - i).toString();
     }
 }
+
+var selectedCell = null;
+
+function handleCellClick(cellID) {
+    if (selectedCell === null) {
+        // first click
+        selectedCell = cellID;
+
+        // highlight selected cell
+        document.getElementById(selectedCell).classList.add("selected-cell");
+    } else {
+        // second click
+        if (selectedCell !== cellID) {
+            updatePiecePosition(selectedCell, cellID);
+            updateTable();
+        }
+
+        // remove the highlight from the first selected cell
+        document.getElementById(selectedCell).classList.remove("selected-cell");
+
+        // reset selected cell
+        selectedCell = null;
+    }
+}
+
+// I don't know how this click function works, but it works :)
+table.addEventListener('click', function(event) {
+    var clickedElement = event.target;
+
+    if (clickedElement.tagName === 'IMG' || clickedElement.tagName === 'TD') {
+        var cell = clickedElement.tagName === 'IMG' ? clickedElement.parentNode : clickedElement;
+        var cellID = cell.id;
+        handleCellClick(cellID);
+    }
+});
 
 updateTable();
