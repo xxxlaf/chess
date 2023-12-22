@@ -33,13 +33,16 @@ let pieces = [
     ["w", "pawn", "H2"],
 ]
 
-function createTable() {
+// create table element
+var table = document.createElement("table");
+
+function updateTable() {
+    // clear any innerHTML that could exist in the present table
+    table.innerHTML = "";
+
     // board sources
     const l_square = "assets/images/board/square brown light_2x_ns.png";
     const d_square = "assets/images/board/square brown dark_2x_ns.png";
-
-    // create table element
-    var table = document.createElement("table");
 
     // create 8 rows
     for (var i = 0; i < 8; i++) {
@@ -177,4 +180,4 @@ function determineCellID(i, j) {
     }
 }
 
-createTable();
+updateTable();
