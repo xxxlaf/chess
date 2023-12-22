@@ -95,13 +95,61 @@ function updateTable() {
     document.body.appendChild(table);
 }
 
+function determineLegality(pieceIndex, destination) {
+    const type = pieces[pieceIndex][1];
+    const color = pieces[pieceIndex][0];
+    const currentSquare = pieces[pieceIndex][2];
+    const destinationFile = destination.charAt(0);
+    const destinationRank = parseInt(destination.charAt(1), 10);
+
+    console.log(destinationRank);
+
+    // what type of piece is it?
+    switch (type) {
+        case "rook":
+            break;
+        case "knight":
+            break;
+        case "bishop":
+            break;
+        case "queen":
+            break;
+        case "king":
+            break;
+        case "pawn":
+            // determine direction based on color
+            const direction = color === "w" ? 1 : -1;
+
+            // check if destination is one or two squares forward
+            if ((destinationRank === parseInt(currentSquare.charAt(1), 10) + direction && destinationFile === currentSquare.charAt(0)) || (destinationRank === parseInt(currentSquare.charAt(1), 10) + 2 * direction && destinationFile === currentSquare.charAt(0) && ((color === "w" && currentSquare.charAt(1) === "2") || (color === "b" && currentSquare.charAt(1) === "7")))) {
+                // check if there is no piece is destination cell
+                if (pieceExists(destination) === -1) {
+                    return true;
+                }
+            }
+
+            // check if pawn is capturing diagonally
+            if (destinationRank === parseInt(currentSquare.charAt(1), 10) + direction && (destinationFile === String.fromCharCode(currentSquare.charCodeAt(0) + 1) || destinationFile === String.fromCharCode(currentSquare.charCodeAt(0) - 1))) {
+                // check if there is a piece of the opposite color in the destination cell
+                const capturedPieceIndex = pieceExists(destination);
+                if (capturedPieceIndex > -1 && pieces[capturedPieceIndex][0] !== color) {
+                    return true;
+                }
+            }
+
+            return false;
+    }
+}
+
 function updatePiecePosition(location, destination) {
     // find piece index based on location
     var pieceIndex = pieceExists(location);
 
     if (pieceIndex > -1) {
-        // update piece location to destination
-        pieces[pieceIndex][2] = destination;
+        if (determineLegality(pieceIndex, destination)) {
+            // update piece location to destination
+            pieces[pieceIndex][2] = destination;
+        } // else... don't move the piece
     }
 }
 
