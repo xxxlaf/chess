@@ -22,3 +22,7 @@
 .selected-cell {
     border: 1px solid #FFD700;
 }
+
+.main-header {
+    text-align: center;
+}

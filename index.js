@@ -33,12 +33,16 @@ let pieces = [
     ["w", "pawn", "H2"],
 ]
 
+// get main work area
+var mainWorkArea = document.getElementById("main-work-area");
+
 // create table element
 var table = document.createElement("table");
 
 function updateTable() {
     // clear any innerHTML that could exist in the present table
     table.innerHTML = "";
+    table.id = "chess-board";
 
     // board sources
     const l_square = "assets/images/board/square brown light_2x_ns.png";
@@ -92,7 +96,7 @@ function updateTable() {
     }
 
     // append table to the body of the html
-    document.body.appendChild(table);
+    mainWorkArea.appendChild(table);
 }
 
 
