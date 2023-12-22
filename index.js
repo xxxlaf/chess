@@ -95,42 +95,155 @@ function updateTable() {
     document.body.appendChild(table);
 }
 
+
+
+function isPathClear(startSquare, endSquare) {
+    const startFile = startSquare.charAt(0);
+    const startRank = parseInt(startSquare.charAt(1), 10);
+    const endFile = endSquare.charAt(0);
+    const endRank = parseInt(endSquare.charAt(1), 10);
+
+    const fileDirection = startFile === endFile ? 0 : startFile < endFile ? 1 : -1;
+    const rankDirection = startRank === endRank ? 0 : startRank < endRank ? 1 : -1;
+
+    let currentFile = startFile.charCodeAt(0) + fileDirection;
+    let currentRank = startRank + rankDirection;
+
+    while (currentFile !== endFile.charCodeAt(0) || currentRank !== endRank) {
+        const currentSquare = String.fromCharCode(currentFile) + currentRank.toString();
+
+        // check if any piece exists in the path
+        if (pieceExists(currentSquare) !== -1) {
+            return false; // path is not clear
+        }
+
+        currentFile += fileDirection;
+        currentRank += rankDirection;
+    }
+
+    return true; // path is clear
+}
+
+
+
 function determineLegality(pieceIndex, destination) {
     const type = pieces[pieceIndex][1];
     const color = pieces[pieceIndex][0];
     const currentSquare = pieces[pieceIndex][2];
     const destinationFile = destination.charAt(0);
     const destinationRank = parseInt(destination.charAt(1), 10);
-
-    console.log(destinationRank);
+    let fileDifference = 0;
+    let rankDifference = 0;
+    let capturedPieceIndex = 0;
 
     // what type of piece is it?
     switch (type) {
         case "rook":
-            break;
+            // Check if the destination is along a rank or file
+            fileDifference = Math.abs(currentSquare.charCodeAt(0) - destinationFile.charCodeAt(0));
+            rankDifference = Math.abs(parseInt(currentSquare.charAt(1), 10) - destinationRank);
+
+            if (fileDifference === 0 || rankDifference === 0) {
+                // Check if the path is clear
+                if (isPathClear(currentSquare, destination)) {
+                    // Check if the destination square is empty or has an opponent's piece
+                    capturedPieceIndex = pieceExists(destination);
+                    if (capturedPieceIndex === -1 || pieces[capturedPieceIndex][0] !== color) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         case "knight":
-            break;
+            // Check if the destination is a valid L-shaped move
+            fileDifference = Math.abs(currentSquare.charCodeAt(0) - destinationFile.charCodeAt(0));
+            rankDifference = Math.abs(parseInt(currentSquare.charAt(1), 10) - destinationRank);
+
+            if ((fileDifference === 2 && rankDifference === 1) || (fileDifference === 1 && rankDifference === 2)) {
+                // Check if the destination square is empty or has an opponent's piece
+                capturedPieceIndex = pieceExists(destination);
+                if (capturedPieceIndex === -1 || pieces[capturedPieceIndex][0] !== color) {
+                    return true;
+                }
+            }
+
+            return false;
         case "bishop":
+            // check if destination is along a diagonal
+            fileDifference = Math.abs(currentSquare.charCodeAt(0) - destinationFile.charCodeAt(0));
+            rankDifference = Math.abs(parseInt(currentSquare.charAt(1), 10) - destinationRank);
+
+            if (fileDifference === rankDifference) {
+                // check if path is clear
+                if (isPathClear(currentSquare, destination)) {
+                    // check if destination square is empty or has an opponent's piece
+                    capturedPieceIndex = pieceExists(destination);
+                    if (capturedPieceIndex === -1 || pieces[capturedPieceIndex][0] !== color) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
             break;
         case "queen":
-            break;
+            // check if destination is along a rank, file, or diagonal
+            fileDifference = Math.abs(currentSquare.charCodeAt(0) - destinationFile.charCodeAt(0));
+            rankDifference = Math.abs(parseInt(currentSquare.charAt(1), 10) - destinationRank);
+    
+            // queen can move along a rank, file, or diagonal
+            if (
+                fileDifference === 0 || rankDifference === 0 || fileDifference === rankDifference
+            ) {
+                // check if the path is clear
+                if (isPathClear(currentSquare, destination)) {
+                    // check if destination square is empty or has an opponent's piece
+                    capturedPieceIndex = pieceExists(destination);
+                    if (capturedPieceIndex === -1 || pieces[capturedPieceIndex][0] !== color) {
+                        return true;
+                    }
+                }
+            }
+    
+            return false;
         case "king":
-            break;
+            // Check if the destination is within one square in any direction
+            fileDifference = Math.abs(currentSquare.charCodeAt(0) - destinationFile.charCodeAt(0));
+            rankDifference = Math.abs(parseInt(currentSquare.charAt(1), 10) - destinationRank);
+
+            if (fileDifference <= 1 && rankDifference <= 1) {
+                // Check if the destination square is empty or has an opponent's piece
+                capturedPieceIndex = pieceExists(destination);
+                if (capturedPieceIndex === -1 || pieces[capturedPieceIndex][0] !== color) {
+                    return true;
+                }
+            }
+            return false;
         case "pawn":
-            // determine direction based on color
+            // Determine direction based on color
             const direction = color === "w" ? 1 : -1;
 
-            // check if destination is one or two squares forward
-            if ((destinationRank === parseInt(currentSquare.charAt(1), 10) + direction && destinationFile === currentSquare.charAt(0)) || (destinationRank === parseInt(currentSquare.charAt(1), 10) + 2 * direction && destinationFile === currentSquare.charAt(0) && ((color === "w" && currentSquare.charAt(1) === "2") || (color === "b" && currentSquare.charAt(1) === "7")))) {
-                // check if there is no piece is destination cell
+            // Check if destination is one or two squares forward
+            if (
+                (destinationRank === parseInt(currentSquare.charAt(1), 10) + direction && destinationFile === currentSquare.charAt(0)) ||
+                (destinationRank === parseInt(currentSquare.charAt(1), 10) + 2 * direction &&
+                    destinationFile === currentSquare.charAt(0) &&
+                    ((color === "w" && currentSquare.charAt(1) === "2") || (color === "b" && currentSquare.charAt(1) === "7")))
+            ) {
+                // Check if there is no piece in the destination cell
                 if (pieceExists(destination) === -1) {
                     return true;
                 }
             }
 
-            // check if pawn is capturing diagonally
-            if (destinationRank === parseInt(currentSquare.charAt(1), 10) + direction && (destinationFile === String.fromCharCode(currentSquare.charCodeAt(0) + 1) || destinationFile === String.fromCharCode(currentSquare.charCodeAt(0) - 1))) {
-                // check if there is a piece of the opposite color in the destination cell
+            // Check if pawn is capturing diagonally
+            if (
+                destinationRank === parseInt(currentSquare.charAt(1), 10) + direction &&
+                (destinationFile === String.fromCharCode(currentSquare.charCodeAt(0) + 1) ||
+                    destinationFile === String.fromCharCode(currentSquare.charCodeAt(0) - 1))
+            ) {
+                // Check if there is a piece of the opposite color in the destination cell
                 const capturedPieceIndex = pieceExists(destination);
                 if (capturedPieceIndex > -1 && pieces[capturedPieceIndex][0] !== color) {
                     return true;
